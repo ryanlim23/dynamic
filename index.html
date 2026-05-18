@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>数据管理平台 · GitHub Pages + JSONBin</title>
+<style>
+/* ===== Reset & Variables ===== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --primary:#6366f1;--primary-light:#eef2ff;--primary-dark:#4338ca;
+  --success:#10b981;--danger:#ef4444;--warning:#f59e0b;
+  --bg:#f1f5f9;--surface:#fff;--border:#e2e8f0;
+  --text-1:#0f172a;--text-2:#64748b;--text-3:#94a3b8;
+  --radius:14px;--radius-sm:10px;
+  --shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --shadow-md:0 4px 20px rgba(0,0,0,.08);
+  --shadow-lg:0 12px 40px rgba(0,0,0,.12);
+  --ease:.28s cubic-bezier(.4,0,.2,1);
+}
+html{scroll-behavior:smooth}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;
+  background:var(--bg);color:var(--text-1);line-height:1.6;min-height:100vh;
+}
+
+/* ===== Header ===== */
+.header{
+  background:linear-gradient(135deg,#6366f1 0%,#8b5cf6 50%,#a78bfa 100%);
+  color:#fff;padding:48px 20px 36px;text-align:center;position:relative;overflow:hidden;
+}
+.header::before{
+  content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;
+  background:radial-gradient(circle,rgba(255,255,255,.08) 0%,transparent 60%);
+  animation:headerPulse 8s ease infinite;
+}
+@keyframes headerPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+.header h1{font-size:30px;font-weight:800;position:relative;letter-spacing:-.5px}
+.header p{opacity:.85;font-size:15px;margin-top:6px;position:relative}
+.header .tech-badges{display:flex;gap:8px;justify-content:center;margin-top:16px;position:relative;flex-wrap:wrap}
+.tech-badge{
+  background:rgba(255,255,255,.18);backdrop-filter:blur(6px);
+  padding:4px 14px;border-radius:20px;font-size:12px;font-weight:600;
+  border:1px solid rgba(255,255,255,.25);
+}
+
+/* ===== Stats ===== */
+.stats-bar{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;padding:20px;margin-top:-28px;position:relative;z-index:2}
+.stat-card{
+  background:var(--surface);border-radius:var(--radius);padding:18px 32px;
+  box-shadow:var(--shadow-md);text-align:center;min-width:120px;
+  transition:transform var(--ease);
+}
+.stat-card:hover{transform:translateY(-3px)}
+.stat-num{font-size:30px;font-weight:800;background:linear-gradient(135deg,var(--primary),#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-label{font-size:12px;color:var(--text-2);margin-top:2px;font-weight:500}
+
+/* ===== Container ===== */
+.container{max-width:920px;margin:0 auto;padding:28px 20px 80px}
+
+/* ===== Cards ===== */
+.card{
+  background:var(--surface);border-radius:var(--radius);padding:28px;
+  box-shadow:var(--shadow);margin-bottom:24px;
+  border:1px solid var(--border);
+  transition:box-shadow var(--ease);
+}
+.card:hover{box-shadow:var(--shadow-md)}
+.card h2{font-size:18px;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:8px}
+
+/* ===== Form ===== */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-grid .full{grid-column:1/-1}
+label{display:block;font-size:13px;font-weight:600;color:var(--text-2);margin-bottom:5px}
+input,textarea,select{
+  width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);
+  font-size:14px;font-family:inherit;background:var(--bg);color:var(--text-1);
+  outline:none;transition:border-color var(--ease),box-shadow var(--ease),background var(--ease);
+}
+input:focus,textarea:focus,select:focus{
+  border-color:var(--primary);box-shadow:0 0 0 3px rgba(99,102,241,.12);background:#fff;
+}
+textarea{resize:vertical;min-height:72px}
+::placeholder{color:var(--text-3)}
+
+/* ===== Buttons ===== */
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:10px 22px;border:none;border-radius:var(--radius-sm);
+  font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;
+  transition:all var(--ease);white-space:nowrap;
+}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary-dark);transform:translateY(-1px);box-shadow:0 4px 14px rgba(99,102,241,.35)}
+.btn-danger{background:var(--danger);color:#fff;font-size:12px;padding:7px 14px}
+.btn-danger:hover{opacity:.85}
+.btn-success{background:var(--success);color:#fff;font-size:12px;padding:7px 14px}
+.btn-ghost{background:transparent;color:var(--primary);border:1.5px solid var(--border);font-size:12px;padding:7px 14px}
+.btn-ghost:hover{border-color:var(--primary);background:var(--primary-light)}
+.btn-cancel{background:var(--bg);color:var(--text-2);border:1.5px solid var(--border)}
+.btn-cancel:hover{background:var(--border)}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
+
+.form-actions{margin-top:20px;display:flex;gap:10px;align-items:center}
+#cancelEdit{display:none}
+
+/* ===== Filter Bar ===== */
+.filter-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:22px;align-items:center}
+.filter-bar input{flex:1;min-width:160px;background:var(--surface)}
+.filter-bar select{max-width:160px;background:var(--surface)}
+
+/* ===== List ===== */
+.list-card{overflow:hidden;padding:0}
+.list-header{
+  padding:18px 28px;border-bottom:1px solid var(--border);
+  font-size:16px;font-weight:700;display:flex;justify-content:space-between;align-items:center;
+}
+.list-header span{font-size:13px;color:var(--text-3);font-weight:400}
+
+/* ===== Item Row ===== */
+.item-row{
+  display:flex;align-items:center;gap:14px;
+  padding:16px 28px;border-bottom:1px solid var(--border);
+  transition:background var(--ease);animation:fadeIn .35s ease both;
+}
+.item-row:last-child{border-bottom:none}
+.item-row:hover{background:#f8fafc}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+.item-check{
+  width:22px;height:22px;border:2px solid var(--border);border-radius:50%;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:all var(--ease);font-size:12px;color:transparent;
+}
+.item-check:hover{border-color:var(--success)}
+.item-check.done{background:var(--success);border-color:var(--success);color:#fff}
+
+.item-body{flex:1;min-width:0}
+.item-name{font-weight:600;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item-name.done{text-decoration:line-through;color:var(--text-3)}
+.item-desc{font-size:13px;color:var(--text-3);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.item-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;flex-shrink:0}
+.item-cat{
+  font-size:11px;background:var(--primary-light);color:var(--primary);
+  padding:3px 11px;border-radius:12px;font-weight:600;
+}
+.item-time{font-size:11px;color:var(--text-3)}
+.item-actions{display:flex;gap:6px;flex-shrink:0}
+
+.empty-state{text-align:center;padding:60px 20px;color:var(--text-3)}
+.empty-state .emoji{font-size:52px;margin-bottom:14px}
+.empty-state p{font-size:15px}
+.empty-state .sub{font-size:13px;margin-top:4px}
+
+/* ===== Loading Spinner ===== */
+.spinner{
+  width:40px;height:40px;margin:40px auto;
+  border:3px solid var(--border);border-top-color:var(--primary);
+  border-radius:50%;animation:spin .7s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ===== Toast ===== */
+.toast-wrap{position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.toast{
+  padding:13px 22px;border-radius:var(--radius-sm);color:#fff;font-size:14px;
+  font-weight:500;box-shadow:var(--shadow-md);animation:slideIn .35s ease;max-width:360px;
+  display:flex;align-items:center;gap:8px;
+}
+.toast.success{background:var(--success)}.toast.error{background:var(--danger)}.toast.info{background:var(--primary)}
+@keyframes slideIn{from{opacity:0;transform:translateX(50px)}to{opacity:1;transform:translateX(0)}}
+
+/* ===== Config Banner ===== */
+.config-banner{
+  background:linear-gradient(135deg,#fef3c7,#fde68a);
+  border:2px solid #f59e0b;border-radius:var(--radius);
+  padding:24px 28px;margin-bottom:24px;
+}
+.config-banner h3{color:#92400e;margin-bottom:8px;font-size:16px}
+.config-banner p{color:#78350f;font-size:13px;line-height:1.8}
+.config-banner code{
+  background:rgba(0,0,0,.08);padding:2px 8px;border-radius:4px;
+  font-size:12px;font-family:'Courier New',monospace;
+}
+.config-banner.hidden{display:none}
+
+/* ===== Footer ===== */
+.footer{text-align:center;padding:30px;color:var(--text-3);font-size:13px}
+.footer a{color:var(--primary);text-decoration:none}
+
+/* ===== Responsive ===== */
+@media(max-width:640px){
+  .header{padding:36px 16px 28px}
+  .header h1{font-size:24px}
+  .form-grid{grid-template-columns:1fr}
+  .stats-bar{gap:10px}.stat-card{padding:12px 18px;min-width:85px}.stat-num{font-size:24px}
+  .container{padding:20px 14px 60px}
+  .card{padding:20px}
+  .item-row{flex-wrap:wrap;padding:14px 18px;gap:10px}
+  .item-meta{width:100%;order:3}
+  .item-actions{order:4;width:100%;justify-content:flex-end}
+  .list-header{padding:14px 18px}
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <h1>📊 动态数据管理平台</h1>
+  <p>零服务器 · 纯前端 · 数据实时持久化</p>
+  <div class="tech-badges">
+    <span class="tech-badge">GitHub Pages</span>
+    <span class="tech-badge">JSONBin.io</span>
+    <span class="tech-badge">Vanilla JS</span>
+    <span class="tech-badge">RESTful API</span>
+  </div>
+</div>
+
+<!-- Stats -->
+<div class="stats-bar">
+  <div class="stat-card"><div class="stat-num" id="statTotal">-</div><div class="stat-label">总条目</div></div>
+  <div class="stat-card"><div class="stat-num" id="statDone">-</div><div class="stat-label">已完成</div></div>
+  <div class="stat-card"><div class="stat-num" id="statPending">-</div><div class="stat-label">进行中</div></div>
+  <div class="stat-card"><div class="stat-num" id="statCats">-</div><div class="stat-label">分类数</div></div>
+</div>
+
+<div class="container">
+
+  <!-- Config Banner -->
+  <div class="config-banner" id="configBanner">
+    <h3>⚙️ 首次使用？请先完成配置（仅需 2 分钟）</h3>
+    <p>
+      1️⃣ 访问 <a href="https://jsonbin.io" target="_blank">jsonbin.io</a> 注册免费账号<br/>
+      2️⃣ 创建一个新 Bin，内容填写 <code>{"items":[]}</code><br/>
+      3️⃣ 复制你的 <strong>Bin ID</strong> 和 <strong>X-Master-Key</strong><br/>
+      4️⃣ 粘贴到下方输入框 → 点击「保存配置」<br/>
+      5️⃣ 配置会保存在浏览器本地，刷新不丢失
+    </p>
+    <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+      <div style="flex:1;min-width:200px">
+        <label>Bin ID</label>
+        <input type="text" id="cfgBinId" placeholder="例如：6642f1e9acd3cb34a8123456"/>
+      </div>
+      <div style="flex:1;min-width:200px">
+        <label>X-Master-Key</label>
+        <input type="password" id="cfgApiKey" placeholder="例如：$2a$10$xxxxxxxxxxxxxxxx"/>
+      </div>
+      <button class="btn btn-primary" onclick="saveConfig()" style="height:42px">💾 保存配置</button>
+    </div>
+  </div>
+
+  <!-- Form -->
+  <div class="card" id="formCard">
+    <h2>✏️ <span id="formTitle">添加新数据</span></h2>
+    <form id="dataForm">
+      <input type="hidden" id="editId"/>
+      <div class="form-grid">
+        <div>
+          <label for="fname">名称 *</label>
+          <input type="text" id="fname" placeholder="请输入名称…" required maxlength="80"/>
+        </div>
+        <div>
+          <label for="fcategory">分类</label>
+          <input type="text" id="fcategory" placeholder="例如：工作、学习、生活" maxlength="20"/>
+        </div>
+        <div class="full">
+          <label for="fdesc">描述</label>
+          <textarea id="fdesc" placeholder="请输入详细描述（可选）…" maxlength="300"></textarea>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" id="submitBtn">➕ 添加</button>
+        <button type="button" class="btn btn-cancel" id="cancelEdit" onclick="cancelEdit()">✕ 取消编辑</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Filters -->
+  <div class="filter-bar">
+    <input type="text" id="searchInput" placeholder="🔍  搜索条目…"/>
+    <select id="filterCat"><option value="全部">全部分类</option></select>
+    <select id="filterStatus">
+      <option value="全部">全部状态</option>
+      <option value="pending">进行中</option>
+      <option value="done">已完成</option>
+    </select>
+    <select id="sortOrder">
+      <option value="newest">最新优先</option>
+      <option value="oldest">最早优先</option>
+      <option value="name">按名称</option>
+    </select>
+  </div>
+
+  <!-- List -->
+  <div class="card list-card">
+    <div class="list-header">
+      📋 数据列表
+      <span>
+        <span id="listCount">共 0 条</span>
+        &nbsp;·&nbsp;
+        <button class="btn btn-ghost" onclick="loadData()" style="padding:4px 12px;font-size:11px">🔄 刷新</button>
+      </span>
+    </div>
+    <div id="itemList"><div class="spinner"></div></div>
+  </div>
+
+</div>
+
+<!-- Toast -->
+<div class="toast-wrap" id="toastWrap"></div>
+
+<!-- Footer -->
+<div class="footer">
+  基于 <a href="https://pages.github.com" target="_blank">GitHub Pages</a> +
+  <a href="https://jsonbin.io" target="_blank">JSONBin.io</a> 构建 ·
+  零服务器 · 完全免费
+</div>
+
+<script>
+// ============================================================
+//  配置管理
+// ============================================================
+let BIN_ID  = localStorage.getItem('jb_bin_id')  || '';
+let API_KEY = localStorage.getItem('jb_api_key') || '';
+
+function saveConfig() {
+  const bid = document.getElementById('cfgBinId').value.trim();
+  const key = document.getElementById('cfgApiKey').value.trim();
+  if (!bid || !key) { toast('请填写完整的 Bin ID 和 API Key', 'error'); return; }
+  BIN_ID = bid; API_KEY = key;
+  localStorage.setItem('jb_bin_id', bid);
+  localStorage.setItem('jb_api_key', key);
+  toast('✅ 配置保存成功！正在加载数据…', 'success');
+  document.getElementById('configBanner').classList.add('hidden');
+  loadData();
+}
+
+function checkConfig() {
+  if (BIN_ID && API_KEY) {
+    document.getElementById('configBanner').classList.add('hidden');
+    document.getElementById('cfgBinId').value = BIN_ID;
+    document.getElementById('cfgApiKey').value = API_KEY;
+    return true;
+  }
+  document.getElementById('configBanner').classList.remove('hidden');
+  document.getElementById('itemList').innerHTML =
+    '<div class="empty-state"><div class="emoji">⚙️</div><p>请先完成上方配置</p><p class="sub">注册 JSONBin.io 并填入密钥即可开始</p></div>';
+  updateStats([]);
+  return false;
+}
+
+// ============================================================
+//  JSONBin.io API 封装
+// ============================================================
+const apiUrl = () => `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+const headers = () => ({ 'Content-Type': 'application/json', 'X-Master-Key': API_KEY });
+
+async function readBin() {
+  const res = await fetch(`${apiUrl()}/latest`, { headers: headers() });
+  if (!res.ok) throw new Error(`读取失败 (${res.status})`);
+  const json = await res.json();
+  return json.record?.items || [];
+}
+
+async function writeBin(items) {
+  const res = await fetch(apiUrl(), {
+    method: 'PUT',
+    headers: headers(),
+    body: JSON.stringify({ items })
+  });
+  if (!res.ok) throw new Error(`写入失败 (${res.status})`);
+  return true;
+}
+
+// ============================================================
+//  UUID 生成
+// ============================================================
+function uuid() {
+  return 'xxxx-xxxx-xxxx'.replace(/x/g, () => ((Math.random()*16)|0).toString(16));
+}
+
+// ============================================================
+//  Toast 通知
+// ============================================================
+function toast(msg, type='info') {
+  const wrap = document.getElementById('toastWrap');
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.textContent = msg;
+  wrap.appendChild(el);
+  setTimeout(() => {
+    el.style.opacity = '0'; el.style.transform = 'translateX(50px)';
+    el.style.transition = 'all .35s ease';
+    setTimeout(() => el.remove(), 350);
+  }, 3000);
+}
+
+// ============================================================
+//  HTML 转义（防 XSS）
+// ============================================================
+function esc(str) {
+  const d = document.createElement('div');
+  d.textContent = str || '';
+  return d.innerHTML;
+}
+
+// ============================================================
+//  数据加载 & 渲染
+// ============================================================
+let allItems = [];
+
+async function loadData() {
+  if (!checkConfig()) return;
+  const list = document.getElementById('itemList');
+  list.innerHTML = '<div class="spinner"></div>';
+  try {
+    allItems = await readBin();
+    updateStats(allItems);
+    updateCategoryFilter(allItems);
+    renderList();
+  } catch (e) {
+    list.innerHTML = `<div class="empty-state"><div class="emoji">❌</div><p>加载失败：${esc(e.message)}</p><p class="sub">请检查 Bin ID 和 API Key 是否正确</p></div>`;
+    toast('数据加载失败: ' + e.message, 'error');
+  }
+}
+
+function updateStats(items) {
+  const total = items.length;
+  const done = items.filter(i => i.completed).length;
+  const cats = [...new Set(items.map(i => i.category))];
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statDone').textContent = done;
+  document.getElementById('statPending').textContent = total - done;
+  document.getElementById('statCats').textContent = cats.length;
+}
+
+function updateCategoryFilter(items) {
+  const sel = document.getElementById('filterCat');
+  const cur = sel.value;
+  const cats = [...new Set(items.map(i => i.category))].sort();
+  sel.innerHTML = '<option value="全部">全部分类</option>' +
+    cats.map(c => `<option value="${esc(c)}" ${c===cur?'selected':''}>${esc(c)}</option>`).join('');
+}
+
+function getFilteredItems() {
+  const search = document.getElementById('searchInput').value.trim().toLowerCase();
+  const cat    = document.getElementById('filterCat').value;
+  const status = document.getElementById('filterStatus').value;
+  const sort   = document.getElementById('sortOrder').value;
+
+  let items = [...allItems];
+
+  // 筛选分类
+  if (cat !== '全部') items = items.filter(i => i.category === cat);
+
+  // 筛选状态
+  if (status === 'done')    items = items.filter(i => i.completed);
+  if (status === 'pending') items = items.filter(i => !i.completed);
+
+  // 搜索
+  if (search) {
+    items = items.filter(i =>
+      (i.name || '').toLowerCase().includes(search) ||
+      (i.description || '').toLowerCase().includes(search)
+    );
+  }
+
+  // 排序
+  if (sort === 'newest')  items.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+  if (sort === 'oldest')  items.sort((a,b) => new Date(a.createdAt) - new Date(b.createdAt));
+  if (sort === 'name')    items.sort((a,b) => (a.name||'').localeCompare(b.name||''));
+
+  return items;
+}
+
+function renderList() {
+  const items = getFilteredItems();
+  const list  = document.getElementById('itemList');
+
+  document.getElementById('listCount').textContent = `共 ${items.length} 条`;
+
+  if (items.length === 0) {
+    list.innerHTML = `
+      <div class="empty-state">
+        <div class="emoji">📭</div>
+        <p>暂无数据</p>
+        <p class="sub">${allItems.length === 0 ? '快来添加第一条数据吧！' : '当前筛选条件下没有匹配结果'}</p>
+      </div>`;
+    return;
+  }
+
+  list.innerHTML = items.map((item, idx) => `
+    <div class="item-row" style="animation-delay:${idx * 0.04}s">
+      <div class="item-check ${item.completed ? 'done' : ''}"
+           onclick="toggleDone('${item.id}')"
+           title="切换完成状态">
+        ${item.completed ? '✓' : ''}
+      </div>
+      <div class="item-body">
+        <div class="item-name ${item.completed ? 'done' : ''}">${esc(item.name)}</div>
+        <div class="item-desc">${esc(item.description || '暂无描述')}</div>
+      </div>
+      <div class="item-meta">
+        <span class="item-cat">${esc(item.category)}</span>
+        <span class="item-time">${formatTime(item.createdAt)}</span>
+      </div>
+      <div class="item-actions">
+        <button class="btn btn-ghost" onclick="startEdit('${item.id}')">编辑</button>
+        <button class="btn btn-danger" onclick="deleteItem('${item.id}')">删除</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function formatTime(ts) {
+  if (!ts) return '';
+  try { return new Date(ts).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}); }
+  catch(e) { return ts; }
+}
+
+// ============================================================
+//  CRUD 操作
+// ============================================================
+
+// 新增 / 更新
+document.getElementById('dataForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = document.getElementById('submitBtn');
+  const editId = document.getElementById('editId').value;
+  const name   = document.getElementById('fname').value.trim();
+  const desc   = document.getElementById('fdesc').value.trim();
+  const cat    = document.getElementById('fcategory').value.trim() || '未分类';
+
+  if (!name) { toast('名称不能为空', 'error'); return; }
+  btn.disabled = true;
+  btn.textContent = '保存中…';
+
+  try {
+    const items = await readBin();
+
+    if (editId) {
+      // 更新
+      const idx = items.findIndex(i => i.id === editId);
+      if (idx !== -1) {
+        items[idx].name = name;
+        items[idx].description = desc;
+        items[idx].category = cat;
+        items[idx].updatedAt = new Date().toISOString();
+      }
+      await writeBin(items);
+      toast('✅ 更新成功', 'success');
+    } else {
+      // 新增
+      items.push({
+        id: uuid(),
+        name,
+        description: desc,
+        category: cat,
+        completed: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      });
+      await writeBin(items);
+      toast('✅ 添加成功', 'success');
+    }
+
+    resetForm();
+    allItems = items;
+    updateStats(items);
+    updateCategoryFilter(items);
+    renderList();
+  } catch (e) {
+    toast('操作失败: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = editId ? '💾 保存修改' : '➕ 添加';
+  }
+});
+
+// 切换完成状态
+async function toggleDone(id) {
+  try {
+    const items = await readBin();
+    const item = items.find(i => i.id === id);
+    if (item) {
+      item.completed = !item.completed;
+      item.updatedAt = new Date().toISOString();
+    }
+    await writeBin(items);
+    allItems = items;
+    updateStats(items);
+    renderList();
+  } catch (e) {
+    toast('更新失败: ' + e.message, 'error');
+  }
+}
+
+// 删除
+async function deleteItem(id) {
+  if (!confirm('确定要删除此条数据吗？删除后不可恢复。')) return;
+  try {
+    let items = await readBin();
+    items = items.filter(i => i.id !== id);
+    await writeBin(items);
+    toast('🗑️ 已删除', 'success');
+    allItems = items;
+    updateStats(items);
+    updateCategoryFilter(items);
+    renderList();
+  } catch (e) {
+    toast('删除失败: ' + e.message, 'error');
+  }
+}
+
+// 编辑模式
+function startEdit(id) {
+  const item = allItems.find(i => i.id === id);
+  if (!item) return;
+  document.getElementById('editId').value = item.id;
+  document.getElementById('fname').value = item.name;
+  document.getElementById('fdesc').value = item.description || '';
+  document.getElementById('fcategory').value = item.category;
+  document.getElementById('formTitle').textContent = '编辑数据';
+  document.getElementById('submitBtn').textContent = '💾 保存修改';
+  document.getElementById('cancelEdit').style.display = 'inline-flex';
+  document.getElementById('fname').focus();
+  document.getElementById('formCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function cancelEdit() { resetForm(); }
+
+function resetForm() {
+  document.getElementById('dataForm').reset();
+  document.getElementById('editId').value = '';
+  document.getElementById('formTitle').textContent = '添加新数据';
+  document.getElementById('submitBtn').textContent = '➕ 添加';
+  document.getElementById('cancelEdit').style.display = 'none';
+}
+
+// ============================================================
+//  筛选 & 搜索事件
+// ============================================================
+let debounceTimer;
+document.getElementById('searchInput').addEventListener('input', () => {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(renderList, 300);
+});
+document.getElementById('filterCat').addEventListener('change', renderList);
+document.getElementById('filterStatus').addEventListener('change', renderList);
+document.getElementById('sortOrder').addEventListener('change', renderList);
+
+// ============================================================
+//  初始化
+// ============================================================
+loadData();
+</script>
+</body>
+</html>
